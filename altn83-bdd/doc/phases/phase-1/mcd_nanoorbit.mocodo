@@ -1,0 +1,13 @@
+INSTRUMENT: ref_instrument [VARCHAR2(20)], type_instrument [VARCHAR2(50)], modele [VARCHAR2(100)], resolution_m [NUMBER(6,1)], consommation_w [NUMBER(5,2)], masse_kg [NUMBER(5,3)]
+EMBARQUEMENT, 1N SATELLITE, 0N INSTRUMENT: date_integration [DATE], etat_fonctionnement [VARCHAR2(20)]
+SATELLITE: id_satellite [VARCHAR2(20)], nom_satellite [VARCHAR2(100)], date_lancement [DATE], masse_kg [NUMBER(5,2)], format_cubesat [VARCHAR2(5)], statut_satellite [VARCHAR2(30)], duree_vie_prevue_mois [NUMBER(4)], capacite_batterie_wh [NUMBER(6,1)]
+PARTICIPATION, 1N SATELLITE, 1N MISSION: role_satellite [VARCHAR2(50)]
+MISSION: id_mission [VARCHAR2(20)], nom_mission [VARCHAR2(100)], objectif [VARCHAR2(500)], zone_cible [VARCHAR2(200)], date_debut [DATE], date_fin [DATE], statut_mission [VARCHAR2(20)]
+:
+
+ORBITE: id_orbite [NUMBER], type_orbite [VARCHAR2(10)], altitude_km [NUMBER(5)], inclinaison_deg [NUMBER(5,2)], periode_orbitale_min [NUMBER(6,2)], excentricite [NUMBER(6,4)], zone_couverture [VARCHAR2(200)]
+DF, 0N ORBITE, 01 SATELLITE
+FENETRE_COM, 0N SATELLITE, 0N STATION_SOL: id_fenetre [NUMBER], datetime_debut [TIMESTAMP], duree_s [NUMBER(4)], elevation_max_deg [NUMBER(5,2)], volume_donnees_mo [NUMBER(8,1)], statut_fenetre [VARCHAR2(20)]
+STATION_SOL: code_station [VARCHAR2(20)], nom_station [VARCHAR2(100)], latitude_deg [NUMBER(9,6)], longitude_deg [NUMBER(9,6)], diametre_antenne_m [NUMBER(4,1)], bande_frequence [VARCHAR2(10)], debit_max_mbps [NUMBER(6,1)], statut_station [VARCHAR2(20)]
+AFFECTATION_STATION, 0N CENTRE_CONTROLE, 11 STATION_SOL: date_affectation [DATE]
+CENTRE_CONTROLE: id_centre [NUMBER], nom_centre [VARCHAR2(100)], ville [VARCHAR2(50)], region_geo [VARCHAR2(50)], fuseau_horaire [VARCHAR2(50)], statut_centre [VARCHAR2(20)]
