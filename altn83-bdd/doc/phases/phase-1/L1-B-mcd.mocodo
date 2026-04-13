@@ -1,0 +1,13 @@
+ORBITE: id_orbite, type_orbite, altitude, inclinaison, periode_orbitale, excentricite, zone_couverture
+PLACER, 0N ORBITE, 11 SATELLITE
+SATELLITE: id_satellite, nom_satellite, date_lancement, masse, format_cubesat, statut_satellite, duree_vie_prevue, capacite_batterie
+COMMUNIQUER, 0N STATION_SOL, 0N SATELLITE: id_fenetre, datetime_debut, duree, elevation_max, volume_donnees, statut_fenetre
+STATION_SOL: code_station, nom_station, latitude, longitude, diametre_antenne, bande_frequence, debit_max, statut_station
+AFFECTER, 1N CENTRE_CONTROLE, 1N STATION_SOL: date_affectation
+
+:
+MISSION: id_mission, nom_mission, objectif, zone_geo_cible, date_debut, date_fin, statut_mission
+PARTICIPER, 0N SATELLITE, 1N MISSION: role_satellite
+EMBARQUER, 1N SATELLITE, 0N INSTRUMENT: date_integration, etat_fonctionnement
+INSTRUMENT: ref_instrument, type_instrument, modele, resolution, consommation, masse_instrument
+CENTRE_CONTROLE: id_centre, nom_centre, ville, region_geo, fuseau_horaire, statut_centre
