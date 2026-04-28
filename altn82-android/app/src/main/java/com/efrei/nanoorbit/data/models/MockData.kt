@@ -8,11 +8,11 @@ object MockData {
     )
 
     val satellites = listOf(
-        Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "2023-01-15", 4.5),
-        Satellite("SAT-002", "NanoObs-2", StatutSatellite.OPERATIONNEL, "3U", 2, "2023-06-20", 4.5),
-        Satellite("SAT-003", "NanoIce-1", StatutSatellite.EN_VEILLE, "6U", 1, "2023-11-05", 8.2),
-        Satellite("SAT-004", "NanoAir-1", StatutSatellite.DEFAILLANT, "1U", 3, "2024-02-10", 1.3),
-        Satellite("SAT-005", "Legacy-1", StatutSatellite.DESORBITE, "3U", 2, "2021-05-12", 4.0)
+        Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "ORB-001", "2023-01-15", 4.5),
+        Satellite("SAT-002", "NanoObs-2", StatutSatellite.OPERATIONNEL, "3U", 2, "ORB-002", "2023-06-20", 4.5),
+        Satellite("SAT-003", "NanoIce-1", StatutSatellite.EN_VEILLE, "6U", 1, "ORB-001", "2023-11-05", 8.2),
+        Satellite("SAT-004", "NanoAir-1", StatutSatellite.DEFAILLANT, "1U", 3, "ORB-003", "2024-02-10", 1.3),
+        Satellite("SAT-005", "Legacy-1", StatutSatellite.DESORBITE, "3U", 2, "ORB-002", "2021-05-12", 4.0)
     )
 
     val instruments = listOf(

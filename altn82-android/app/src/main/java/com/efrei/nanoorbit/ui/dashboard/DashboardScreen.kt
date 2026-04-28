@@ -3,12 +3,14 @@ package com.efrei.nanoorbit.ui.dashboard
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.efrei.nanoorbit.data.models.MockData
-import com.efrei.nanoorbit.data.models.Satellite
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.efrei.nanoorbit.data.models.StatutSatellite
 import com.efrei.nanoorbit.ui.components.SatelliteCard
 
@@ -35,44 +37,80 @@ import com.efrei.nanoorbit.ui.components.SatelliteCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) {
-    var searchQuery by remember { mutableStateOf("") }
+fun DashboardScreen(
+    modifier: Modifier = Modifier,
+    viewModel: NanoOrbitViewModel = viewModel()
+) {
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val filteredSatellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val selectedStatut by viewModel.selectedStatut.collectAsStateWithLifecycle()
     
-    val filteredSatellites = MockData.satellites.filter {
-        it.nomSatellite.contains(searchQuery, ignoreCase = true) ||
-        MockData.orbites.find { orbite -> orbite.idOrbite == it.idOrbite }?.typeOrbite?.contains(searchQuery, ignoreCase = true) ?: false
-    }
-    
-    val operationnelsCount = filteredSatellites.count { it.statut == StatutSatellite.OPERATIONNEL }
-    
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Rechercher par nom ou type d'orbite") },
-            modifier = Modifier.fillMaxWidth()
-        )
+    if (isLoading) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else if (errorMessage != null) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                Text("Erreur : $errorMessage", color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { viewModel.loadSatellites() }) {
+                    Text("Réessayer")
+                }
+            }
+        }
+    } else {
+        val operationnelsCount = filteredSatellites.count { it.statut == StatutSatellite.OPERATIONNEL }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "$operationnelsCount/${filteredSatellites.size} satellites opérationnels",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(filteredSatellites) { satellite ->
-                val orbite = MockData.orbites.find { it.idOrbite == satellite.idOrbite }
-                SatelliteCard(
-                    satellite = satellite,
-                    orbite = orbite,
-                    onClick = { /* Navigation vers DetailScreen dans la Phase 2 */ }
+        Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                label = { Text("Rechercher par nom ou type d'orbite") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // L2-C: Filtres statut fonctionnels
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = selectedStatut == null,
+                    onClick = { viewModel.onStatutFilterChange(null) },
+                    label = { Text("Tous") }
                 )
+                StatutSatellite.values().forEach { status ->
+                    FilterChip(
+                        selected = selectedStatut == status,
+                        onClick = { viewModel.onStatutFilterChange(status) },
+                        label = { Text(status.intitule) }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "$operationnelsCount/${filteredSatellites.size} satellites opérationnels",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filteredSatellites) { satellite ->
+                    SatelliteCard(
+                        satellite = satellite,
+                        onClick = { /* Navigation vers DetailScreen dans la Phase 2 */ }
+                    )
+                }
             }
         }
     }
 }
-

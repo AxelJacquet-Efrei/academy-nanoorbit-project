@@ -11,19 +11,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import com.efrei.nanoorbit.data.models.Orbite
 import com.efrei.nanoorbit.data.models.Satellite
 import com.efrei.nanoorbit.data.models.StatutSatellite
 
 @Composable
 fun SatelliteCard(
     satellite: Satellite,
-    orbite: Orbite?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isDesorbite = satellite.statut == StatutSatellite.DESORBITE
-    
+    val currentStatut = (satellite.statut as StatutSatellite?) ?: StatutSatellite.DEFAILLANT
+    val isDesorbite = currentStatut == StatutSatellite.DESORBITE
+    val safeNomSatellite = (satellite.nomSatellite as String?)?.takeIf { it.isNotBlank() } ?: "Satellite inconnu"
+    val safeIdSatellite = (satellite.idSatellite as String?)?.takeIf { it.isNotBlank() } ?: "UNKNOWN"
+    val safeTypeOrbite = (satellite.typeOrbite as String?)?.takeIf { it.isNotBlank() } ?: "N/A"
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -43,18 +45,18 @@ fun SatelliteCard(
         ) {
             Column {
                 Text(
-                    text = satellite.nomSatellite,
+                    text = safeNomSatellite,
                     style = MaterialTheme.typography.titleMedium,
                     color = if (isDesorbite) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${satellite.formatCubesat} • Orbite: ${orbite?.typeOrbite ?: "N/A"}",
+                    text = "ID: $safeIdSatellite • Orbit type: $safeTypeOrbite",
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isDesorbite) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            StatusBadge(statut = satellite.statut)
+            StatusBadge(statut = currentStatut)
         }
     }
 }
@@ -63,8 +65,7 @@ fun SatelliteCard(
 @Composable
 fun SatelliteCardPreview() {
     SatelliteCard(
-        satellite = Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "2023-01-15", 4.5),
-        orbite = Orbite(1, "SSO", 500, 97.5, "Mondiale"),
+        satellite = Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "ORB-001", "2023-01-15", 4.5),
         onClick = {}
     )
 }

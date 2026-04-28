@@ -1,9 +1,15 @@
 package com.efrei.nanoorbit.data.models
 
+import com.google.gson.annotations.SerializedName
+
 enum class StatutSatellite(val intitule: String) {
+    @SerializedName(value = "Opérationnel", alternate = ["OPERATIONNEL", "Operationnel", "operationnel", "opérationnel"])
     OPERATIONNEL("Opérationnel"),
+    @SerializedName(value = "En veille", alternate = ["EN_VEILLE", "En Veille", "en_veille", "en veille"])
     EN_VEILLE("En veille"),
+    @SerializedName(value = "Défaillant", alternate = ["DEFAILLANT", "Defaillant", "defaillant", "défaillant"])
     DEFAILLANT("Défaillant"),
+    @SerializedName(value = "Désorbité", alternate = ["DESORBITE", "Desorbite", "desorbite", "désorbité"])
     DESORBITE("Désorbité")
 }
 
@@ -13,6 +19,7 @@ data class Satellite(
     val statut: StatutSatellite,
     val formatCubesat: String,
     val idOrbite: Int,
+    val typeOrbite: String,
     val dateLancement: String? = null,
     val masse: Double? = null
 )
