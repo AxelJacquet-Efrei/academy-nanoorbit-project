@@ -56,7 +56,9 @@ data class StationSol(
     val latitude: Double,
     val longitude: Double,
     val diametreAntenne: Double? = null,
-    val debitMax: Double? = null
+    val debitMax: Double? = null,
+    val etat: String = "Operationnelle",
+    val bandeFrequence: String = "S"
 )
 
 data class Mission(
@@ -67,5 +69,11 @@ data class Mission(
     val statutMission: String,
     val dateFin: String? = null,
     val zoneGeoCible: String? = null
+)
+
+data class ParticipationMission(
+    val idMission: String,
+    val idSatellite: String,
+    val role: String
 )
 

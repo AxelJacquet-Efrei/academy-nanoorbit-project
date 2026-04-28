@@ -37,3 +37,22 @@ data class FenetreDto(
     val durationSeconds: Int? = null
 )
 
+data class StationDto(
+    @SerializedName("code_station")
+    val codeStation: String? = null,
+    @SerializedName("nom_station")
+    val nomStation: String? = null,
+    @SerializedName("latitude")
+    val latitude: Double? = null,
+    @SerializedName("longitude")
+    val longitude: Double? = null,
+    @SerializedName("diametre_antenne")
+    val diametreAntenne: Double? = null,
+    @SerializedName("debit_max")
+    val debitMax: Double? = null,
+    @SerializedName("etat")
+    val etat: String? = null,
+    @SerializedName("bande_frequence")
+    val bandeFrequence: String? = null
+)
+

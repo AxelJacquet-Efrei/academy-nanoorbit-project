@@ -12,4 +12,7 @@ interface NanoOrbitApi {
 
     @GET("fenetres")
     suspend fun getFenetres(): List<FenetreDto>
+
+    @GET("stations")
+    suspend fun getStations(): List<StationDto>
 }

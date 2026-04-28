@@ -8,11 +8,11 @@ object MockData {
     )
 
     val satellites = listOf(
-        Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "ORB-001", "2023-01-15", 4.5),
-        Satellite("SAT-002", "NanoObs-2", StatutSatellite.OPERATIONNEL, "3U", 2, "ORB-002", "2023-06-20", 4.5),
-        Satellite("SAT-003", "NanoIce-1", StatutSatellite.EN_VEILLE, "6U", 1, "ORB-001", "2023-11-05", 8.2),
-        Satellite("SAT-004", "NanoAir-1", StatutSatellite.DEFAILLANT, "1U", 3, "ORB-003", "2024-02-10", 1.3),
-        Satellite("SAT-005", "Legacy-1", StatutSatellite.DESORBITE, "3U", 2, "ORB-002", "2021-05-12", 4.0)
+        Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "SSO", "2023-01-15", 4.5),
+        Satellite("SAT-002", "NanoObs-2", StatutSatellite.OPERATIONNEL, "3U", 2, "SSO", "2023-06-20", 4.5),
+        Satellite("SAT-003", "NanoIce-1", StatutSatellite.EN_VEILLE, "6U", 1, "SSO", "2023-11-05", 8.2),
+        Satellite("SAT-004", "NanoAir-1", StatutSatellite.DEFAILLANT, "1U", 3, "LEO", "2024-02-10", 1.3),
+        Satellite("SAT-005", "Legacy-1", StatutSatellite.DESORBITE, "3U", 2, "SSO", "2021-05-12", 4.0)
     )
 
     val instruments = listOf(
@@ -22,18 +22,39 @@ object MockData {
         Instrument("INST-04", "Radiometre", "Rad-Temp", 5.0, 15.0)
     )
 
+    val instrumentsBySatellite = mapOf(
+        "SAT-001" to listOf(instruments[0], instruments[2]),
+        "SAT-002" to listOf(instruments[1]),
+        "SAT-003" to listOf(instruments[0], instruments[3]),
+        "SAT-004" to listOf(instruments[2]),
+        "SAT-005" to listOf(instruments[3])
+    )
+
     val fenetres = listOf(
-        FenetreCom(1, "2024-05-20T10:30:00", 600, "Réalisée", "SAT-001", "ST-KOU"),
-        FenetreCom(2, "2024-05-20T14:15:00", 450, "Réalisée", "SAT-002", "ST-TLS"),
-        FenetreCom(3, "2024-05-20T18:45:00", 800, "Réalisée", "SAT-001", "ST-KOU"),
-        FenetreCom(4, "2024-05-21T09:00:00", 500, "Planifiée", "SAT-003", "ST-KRU"),
-        FenetreCom(5, "2024-05-21T11:30:00", 720, "Planifiée", "SAT-001", "ST-TLS")
+        FenetreCom(1, "2026-04-28T10:30:00", 600, "Realisee", "SAT-001", "ST-KOU", 150.5),
+        FenetreCom(2, "2026-04-28T14:15:00", 450, "Realisee", "SAT-002", "ST-TLS", 98.0),
+        FenetreCom(3, "2026-04-28T18:45:00", 800, "Realisee", "SAT-001", "ST-KOU", 188.2),
+        FenetreCom(4, "2026-04-29T09:00:00", 500, "Planifiee", "SAT-003", "ST-KRU"),
+        FenetreCom(5, "2026-04-29T11:30:00", 720, "Planifiee", "SAT-001", "ST-TLS")
     )
 
     val stations = listOf(
-        StationSol("ST-KOU", "Kourou", 5.1597, -52.6503, 15.0, 1000.0),
-        StationSol("ST-TLS", "Toulouse", 43.6047, 1.4442, 10.0, 500.0),
-        StationSol("ST-KRU", "Kiruna", 67.8557, 20.2251, 13.0, 800.0)
+        StationSol("ST-KOU", "Kourou", 5.1597, -52.6503, 15.0, 1000.0, "Operationnelle", "X"),
+        StationSol("ST-TLS", "Toulouse", 43.6047, 1.4442, 10.0, 500.0, "Operationnelle", "S"),
+        StationSol("ST-KRU", "Kiruna", 67.8557, 20.2251, 13.0, 800.0, "Maintenance", "X")
+    )
+
+    val missions = listOf(
+        Mission("MSN-AMZ-2024", "Amazon Watch", "Suivi deforestation", "2024-01-01", "Active", null, "Amazonie"),
+        Mission("MSN-ICE-2024", "Ice Shield", "Mesure fonte glaciaire", "2024-02-10", "Active", null, "Arctique"),
+        Mission("MSN-DEF-2022", "Legacy Defense", "Observation historique", "2022-03-12", "Terminee", "2023-11-30", "Europe")
+    )
+
+    val participations = listOf(
+        ParticipationMission("MSN-AMZ-2024", "SAT-001", "Leader observation"),
+        ParticipationMission("MSN-AMZ-2024", "SAT-002", "Relais donnees"),
+        ParticipationMission("MSN-ICE-2024", "SAT-003", "Acquisition thermique"),
+        ParticipationMission("MSN-ICE-2024", "SAT-004", "Backup"),
+        ParticipationMission("MSN-DEF-2022", "SAT-005", "Archive")
     )
 }
-

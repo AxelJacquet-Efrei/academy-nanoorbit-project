@@ -29,3 +29,16 @@ class FenetreOut(BaseModel):
     duration_seconds: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class StationOut(BaseModel):
+    code_station: str
+    nom_station: str
+    latitude: float
+    longitude: float
+    diametre_antenne: float | None = None
+    debit_max: float | None = None
+    etat: str | None = None
+    bande_frequence: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,13 @@
 package com.efrei.nanoorbit.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -9,8 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.efrei.nanoorbit.data.models.Satellite
 import com.efrei.nanoorbit.data.models.StatutSatellite
 
@@ -20,18 +26,19 @@ fun SatelliteCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val currentStatut = (satellite.statut as StatutSatellite?) ?: StatutSatellite.DEFAILLANT
-    val isDesorbite = currentStatut == StatutSatellite.DESORBITE
-    val safeNomSatellite = (satellite.nomSatellite as String?)?.takeIf { it.isNotBlank() } ?: "Satellite inconnu"
-    val safeIdSatellite = (satellite.idSatellite as String?)?.takeIf { it.isNotBlank() } ?: "UNKNOWN"
-    val safeTypeOrbite = (satellite.typeOrbite as String?)?.takeIf { it.isNotBlank() } ?: "N/A"
+    val isDesorbite = satellite.statut == StatutSatellite.DESORBITE
+    val textColor = if (isDesorbite) {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(enabled = !isDesorbite, onClick = onClick),
         colors = if (isDesorbite) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
         } else {
             CardDefaults.cardColors()
         }
@@ -43,20 +50,23 @@ fun SatelliteCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = safeNomSatellite,
+                    text = satellite.nomSatellite,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (isDesorbite) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface
+                    color = textColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "ID: $safeIdSatellite • Orbit type: $safeTypeOrbite",
+                    text = "ID: ${satellite.idSatellite} - ${satellite.formatCubesat} - ${satellite.typeOrbite}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (isDesorbite) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (isDesorbite) {
+                    Text("DESORBITE", style = MaterialTheme.typography.labelSmall, color = textColor)
+                }
             }
-            StatusBadge(statut = currentStatut)
+            StatusBadge(statut = satellite.statut)
         }
     }
 }
@@ -65,8 +75,7 @@ fun SatelliteCard(
 @Composable
 fun SatelliteCardPreview() {
     SatelliteCard(
-        satellite = Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "ORB-001", "2023-01-15", 4.5),
+        satellite = Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "SSO", "2023-01-15", 4.5),
         onClick = {}
     )
 }
-
