@@ -9,4 +9,8 @@ router = APIRouter(tags=["fenetres"])
 
 @router.get("/fenetres", response_model=list[schemas.FenetreOut])
 def list_fenetres(db: Session = Depends(get_db)):
-    return db.query(models.FenetreCommunication).order_by(models.FenetreCommunication.id).all()
+    return (
+        db.query(models.FenetreCommunication)
+        .order_by(models.FenetreCommunication.datetime_debut)
+        .all()
+    )

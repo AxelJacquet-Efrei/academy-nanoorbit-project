@@ -1,14 +1,21 @@
 package com.efrei.nanoorbit.data.repository
 
 import android.content.Context
+import com.efrei.nanoorbit.data.api.FenetreDto
+import com.efrei.nanoorbit.data.api.InstrumentDto
+import com.efrei.nanoorbit.data.api.MissionDto
+import com.efrei.nanoorbit.data.api.OrbiteDto
+import com.efrei.nanoorbit.data.api.ParticipationDto
 import com.efrei.nanoorbit.data.api.RetrofitClient
+import com.efrei.nanoorbit.data.api.SatelliteDto
+import com.efrei.nanoorbit.data.api.StationDto
 import com.efrei.nanoorbit.data.db.FenetreEntity
 import com.efrei.nanoorbit.data.db.NanoOrbitDatabase
 import com.efrei.nanoorbit.data.db.SatelliteEntity
 import com.efrei.nanoorbit.data.models.FenetreCom
 import com.efrei.nanoorbit.data.models.Instrument
 import com.efrei.nanoorbit.data.models.Mission
-import com.efrei.nanoorbit.data.models.MockData
+import com.efrei.nanoorbit.data.models.Orbite
 import com.efrei.nanoorbit.data.models.ParticipationMission
 import com.efrei.nanoorbit.data.models.Satellite
 import com.efrei.nanoorbit.data.models.StationSol
@@ -27,8 +34,8 @@ class NanoOrbitRepository(context: Context) {
     private val api = RetrofitClient.api
     private val dao = NanoOrbitDatabase.getInstance(context).dao()
 
-    // Lien ALTN83 Q3 : la strategie cache-first permet a une station, par exemple Singapour,
-    // de continuer a consulter et planifier avec les dernieres donnees connues si le serveur central tombe.
+    // Lien ALTN83 Q3 : la strategie cache-first permet de relire les dernieres donnees
+    // connues. La mise a jour reseau reste obligatoire et ses erreurs remontent a l'UI.
     suspend fun getSatellitesCacheFirst(): CachedResult<List<Satellite>> {
         val cached = withContext(Dispatchers.IO) { dao.getSatellites() }
         if (cached.isNotEmpty()) {
@@ -46,24 +53,7 @@ class NanoOrbitRepository(context: Context) {
 
     suspend fun refreshSatellites(): CachedResult<List<Satellite>> {
         delay(500)
-        val satellites = runCatching {
-            api.getSatellites().map { dto ->
-                val fallback = MockData.satellites.firstOrNull { it.idSatellite == dto.id }
-                Satellite(
-                    idSatellite = dto.id?.takeIf { it.isNotBlank() } ?: fallback?.idSatellite ?: "UNKNOWN",
-                    nomSatellite = dto.name?.takeIf { it.isNotBlank() } ?: fallback?.nomSatellite ?: "Satellite inconnu",
-                    statut = fallback?.statut ?: StatutSatellite.OPERATIONNEL,
-                    formatCubesat = fallback?.formatCubesat ?: "N/A",
-                    idOrbite = dto.orbitType.toOrbitId(),
-                    typeOrbite = dto.orbitType?.takeIf { it.isNotBlank() } ?: fallback?.typeOrbite ?: "N/A",
-                    dateLancement = fallback?.dateLancement,
-                    masse = fallback?.masse
-                )
-            }.ifEmpty { MockData.satellites }
-        }.getOrElse {
-            MockData.satellites
-        }
-
+        val satellites = api.getSatellites().map { it.toSatellite() }
         val now = System.currentTimeMillis()
         withContext(Dispatchers.IO) {
             dao.upsertSatellites(satellites.map { it.toEntity(now) })
@@ -88,71 +78,38 @@ class NanoOrbitRepository(context: Context) {
 
     suspend fun refreshFenetres(): CachedResult<List<FenetreCom>> {
         delay(500)
-        val fenetres = runCatching {
-            api.getFenetres().map { dto ->
-                val id = dto.id?.toIntOrNull() ?: -1
-                val fallback = MockData.fenetres.firstOrNull { it.idFenetre == id }
-                FenetreCom(
-                    idFenetre = id,
-                    datetimeDebut = dto.startTime?.takeIf { it.isNotBlank() } ?: fallback?.datetimeDebut ?: "",
-                    duree = dto.durationSeconds ?: fallback?.duree ?: 0,
-                    statut = fallback?.statut ?: "Planifiee",
-                    idSatellite = dto.satelliteId?.takeIf { it.isNotBlank() } ?: fallback?.idSatellite ?: "UNKNOWN",
-                    codeStation = dto.station?.takeIf { it.isNotBlank() } ?: fallback?.codeStation ?: "",
-                    volumeDonnees = fallback?.volumeDonnees
-                )
-            }.ifEmpty { MockData.fenetres }
-        }.getOrElse {
-            MockData.fenetres
-        }
-
+        val fenetres = api.getFenetres().map { it.toFenetreCom() }.sortedBy { it.datetimeDebut }
         val now = System.currentTimeMillis()
         withContext(Dispatchers.IO) {
             dao.upsertFenetres(fenetres.map { it.toEntity(now) })
         }
-        return CachedResult(fenetres.sortedBy { it.datetimeDebut }, fromCache = false, cacheAgeMillis = 0)
+        return CachedResult(fenetres, fromCache = false, cacheAgeMillis = 0)
     }
 
     suspend fun getInstruments(id: String): List<Instrument> {
         delay(300)
-        return runCatching {
-            api.getInstruments(id).map { dto ->
-                Instrument(
-                    refInstrument = dto.id?.toString()?.takeIf { it.isNotBlank() } ?: "UNKNOWN",
-                    typeInstrument = dto.instrumentType?.takeIf { it.isNotBlank() } ?: "N/A",
-                    modele = dto.name?.takeIf { it.isNotBlank() } ?: "Instrument inconnu",
-                    resolution = null,
-                    consommation = null
-                )
-            }.ifEmpty { MockData.instrumentsBySatellite[id].orEmpty() }
-        }.getOrElse {
-            MockData.instrumentsBySatellite[id].orEmpty()
-        }
+        return api.getInstruments(id).map { it.toInstrument() }
     }
 
     suspend fun getStations(): List<StationSol> {
         delay(300)
-        return runCatching {
-            api.getStations().map { dto ->
-                StationSol(
-                    codeStation = dto.codeStation ?: "UNKNOWN",
-                    nomStation = dto.nomStation ?: "Station inconnue",
-                    latitude = dto.latitude ?: 0.0,
-                    longitude = dto.longitude ?: 0.0,
-                    diametreAntenne = dto.diametreAntenne,
-                    debitMax = dto.debitMax,
-                    etat = dto.etat ?: "Operationnelle",
-                    bandeFrequence = dto.bandeFrequence ?: "S"
-                )
-            }.ifEmpty { MockData.stations }
-        }.getOrElse {
-            MockData.stations
-        }
+        return api.getStations().map { it.toStationSol() }
     }
 
-    fun getMissions(): List<Mission> = MockData.missions
+    suspend fun getOrbites(): List<Orbite> {
+        delay(300)
+        return api.getOrbites().map { it.toOrbite() }
+    }
 
-    fun getParticipations(): List<ParticipationMission> = MockData.participations
+    suspend fun getMissions(): List<Mission> {
+        delay(300)
+        return api.getMissions().map { it.toMission() }
+    }
+
+    suspend fun getParticipations(): List<ParticipationMission> {
+        delay(300)
+        return api.getParticipations().map { it.toParticipationMission() }
+    }
 
     fun validateFenetre(duree: Int, satellite: Satellite?): String? {
         if (duree !in 1..900) {
@@ -163,23 +120,87 @@ class NanoOrbitRepository(context: Context) {
         }
         return null
     }
-
-    private fun String?.toOrbitId(): Int {
-        if (this.isNullOrBlank()) return -1
-        val digits = this.filter { it.isDigit() }
-        return digits.toIntOrNull() ?: MockData.orbites.firstOrNull { it.typeOrbite == this }?.idOrbite ?: -1
-    }
 }
+
+private fun SatelliteDto.toSatellite(): Satellite = Satellite(
+    idSatellite = idSatellite,
+    nomSatellite = nomSatellite,
+    statut = parseStatut(statut),
+    formatCubesat = formatCubesat,
+    idOrbite = idOrbite,
+    typeOrbite = typeOrbite ?: "N/A",
+    altitude = altitude,
+    dateLancement = dateLancement,
+    masse = masse,
+    dureeViePrevue = dureeViePrevue,
+    capaciteBatterie = capaciteBatterie
+)
+
+private fun InstrumentDto.toInstrument(): Instrument = Instrument(
+    refInstrument = refInstrument,
+    typeInstrument = typeInstrument,
+    modele = modele,
+    resolution = resolution,
+    consommation = consommation
+)
+
+private fun FenetreDto.toFenetreCom(): FenetreCom = FenetreCom(
+    idFenetre = idFenetre,
+    datetimeDebut = datetimeDebut,
+    duree = duree,
+    statut = statut,
+    idSatellite = idSatellite,
+    codeStation = codeStation,
+    volumeDonnees = volumeDonnees
+)
+
+private fun StationDto.toStationSol(): StationSol = StationSol(
+    codeStation = codeStation,
+    nomStation = nomStation,
+    latitude = latitude,
+    longitude = longitude,
+    diametreAntenne = diametreAntenne,
+    debitMax = debitMax,
+    etat = etat ?: "Inconnu",
+    bandeFrequence = bandeFrequence ?: "N/A"
+)
+
+private fun OrbiteDto.toOrbite(): Orbite = Orbite(
+    idOrbite = idOrbite,
+    typeOrbite = typeOrbite,
+    altitude = altitude,
+    inclinaison = inclinaison,
+    zoneCouverture = zoneCouverture
+)
+
+private fun MissionDto.toMission(): Mission = Mission(
+    idMission = idMission,
+    nomMission = nomMission,
+    objectif = objectif,
+    dateDebut = dateDebut,
+    statutMission = statutMission,
+    dateFin = dateFin,
+    zoneGeoCible = zoneGeoCible
+)
+
+private fun ParticipationDto.toParticipationMission(): ParticipationMission = ParticipationMission(
+    idMission = idMission,
+    idSatellite = idSatellite,
+    role = role
+)
 
 private fun SatelliteEntity.toSatellite(): Satellite = Satellite(
     idSatellite = idSatellite,
     nomSatellite = nomSatellite,
-    statut = runCatching { StatutSatellite.valueOf(statut) }.getOrDefault(StatutSatellite.DEFAILLANT),
+    statut = parseStatut(statut),
     formatCubesat = formatCubesat,
     idOrbite = idOrbite,
     typeOrbite = typeOrbite,
+    altitude = altitude,
     dateLancement = dateLancement,
-    masse = masse
+    masse = masse,
+    dureeViePrevue = dureeViePrevue,
+    capaciteBatterie = capaciteBatterie
 )
 
 private fun Satellite.toEntity(updatedAt: Long): SatelliteEntity = SatelliteEntity(
@@ -189,8 +210,11 @@ private fun Satellite.toEntity(updatedAt: Long): SatelliteEntity = SatelliteEnti
     formatCubesat,
     idOrbite,
     typeOrbite,
+    altitude,
     dateLancement,
     masse,
+    dureeViePrevue,
+    capaciteBatterie,
     updatedAt
 )
 
@@ -214,3 +238,21 @@ private fun FenetreCom.toEntity(updatedAt: Long): FenetreEntity = FenetreEntity(
     volumeDonnees,
     updatedAt
 )
+
+private fun parseStatut(value: String): StatutSatellite {
+    val normalized = value
+        .lowercase()
+        .replace("é", "e")
+        .replace("è", "e")
+        .replace("ê", "e")
+        .replace("_", " ")
+        .trim()
+
+    return when (normalized) {
+        "operationnel" -> StatutSatellite.OPERATIONNEL
+        "en veille" -> StatutSatellite.EN_VEILLE
+        "defaillant" -> StatutSatellite.DEFAILLANT
+        "desorbite" -> StatutSatellite.DESORBITE
+        else -> error("Statut satellite inconnu: $value")
+    }
+}

@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase;
 
 @Database(
         entities = {SatelliteEntity.class, FenetreEntity.class},
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class NanoOrbitDatabase extends RoomDatabase {
@@ -24,7 +24,7 @@ public abstract class NanoOrbitDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             NanoOrbitDatabase.class,
                             "nanoorbit.db"
-                    ).build();
+                    ).fallbackToDestructiveMigration().build();
                 }
             }
         }

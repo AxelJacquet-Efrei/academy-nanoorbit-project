@@ -18,14 +18,17 @@ data class Satellite(
     val nomSatellite: String,
     val statut: StatutSatellite,
     val formatCubesat: String,
-    val idOrbite: Int,
+    val idOrbite: String,
     val typeOrbite: String,
+    val altitude: Int? = null,
     val dateLancement: String? = null,
-    val masse: Double? = null
+    val masse: Double? = null,
+    val dureeViePrevue: Int? = null,
+    val capaciteBatterie: Double? = null
 )
 
 data class Orbite(
-    val idOrbite: Int,
+    val idOrbite: String,
     val typeOrbite: String,
     val altitude: Int,
     val inclinaison: Double,

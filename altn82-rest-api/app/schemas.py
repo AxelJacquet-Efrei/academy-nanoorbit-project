@@ -1,34 +1,39 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class SatelliteOut(BaseModel):
-    id: str
-    name: str
-    orbit_type: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
+    id_satellite: str
+    nom_satellite: str
+    statut: str
+    format_cubesat: str
+    id_orbite: str
+    type_orbite: str | None = None
+    altitude: int | None = None
+    date_lancement: date | None = None
+    masse: float | None = None
+    duree_vie_prevue: int | None = None
+    capacite_batterie: float | None = None
 
 
 class InstrumentOut(BaseModel):
-    id: str | int
-    satellite_id: str
-    name: str
-    instrument_type: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
+    ref_instrument: str
+    type_instrument: str
+    modele: str
+    resolution: float | None = None
+    consommation: float | None = None
+    etat_fonctionnement: str | None = None
 
 
 class FenetreOut(BaseModel):
-    id: str
-    satellite_id: str | None = None
-    station: str | None = None
-    start_time: datetime
-    end_time: datetime
-    duration_seconds: int
-
-    model_config = ConfigDict(from_attributes=True)
+    id_fenetre: int
+    datetime_debut: datetime
+    duree: int
+    statut: str
+    id_satellite: str
+    code_station: str
+    volume_donnees: float | None = None
 
 
 class StationOut(BaseModel):
@@ -41,4 +46,26 @@ class StationOut(BaseModel):
     etat: str | None = None
     bande_frequence: str | None = None
 
-    model_config = ConfigDict(from_attributes=True)
+
+class OrbiteOut(BaseModel):
+    id_orbite: str
+    type_orbite: str
+    altitude: int
+    inclinaison: float
+    zone_couverture: str | None = None
+
+
+class MissionOut(BaseModel):
+    id_mission: str
+    nom_mission: str
+    objectif: str
+    date_debut: date
+    statut_mission: str
+    date_fin: date | None = None
+    zone_geo_cible: str | None = None
+
+
+class ParticipationOut(BaseModel):
+    id_mission: str
+    id_satellite: str
+    role: str

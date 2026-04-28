@@ -15,4 +15,13 @@ interface NanoOrbitApi {
 
     @GET("stations")
     suspend fun getStations(): List<StationDto>
+
+    @GET("orbites")
+    suspend fun getOrbites(): List<OrbiteDto>
+
+    @GET("missions")
+    suspend fun getMissions(): List<MissionDto>
+
+    @GET("participations")
+    suspend fun getParticipations(): List<ParticipationDto>
 }

@@ -23,7 +23,10 @@ import com.efrei.nanoorbit.ui.map.MapScreen
 import com.efrei.nanoorbit.ui.planning.PlanningScreen
 
 @Composable
-fun NanoOrbitApp(modifier: Modifier = Modifier) {
+fun NanoOrbitApp(
+    modifier: Modifier = Modifier,
+    startDestination: String = Routes.Dashboard
+) {
     val navController = rememberNavController()
     val viewModel: NanoOrbitViewModel = viewModel()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -51,7 +54,7 @@ fun NanoOrbitApp(modifier: Modifier = Modifier) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.Dashboard,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.Dashboard) {

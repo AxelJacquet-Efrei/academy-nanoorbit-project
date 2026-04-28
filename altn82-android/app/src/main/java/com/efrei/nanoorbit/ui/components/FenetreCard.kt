@@ -65,7 +65,7 @@ fun FenetreCard(
 @Composable
 fun FenetreCardPreview() {
     FenetreCard(
-        fenetre = FenetreCom(1, "2026-04-28T10:30:00", 600, "Realisee", "SAT-001", "ST-KOU", 150.5),
-        nomStation = "Kourou"
+        fenetre = FenetreCom(1, "2024-01-15T09:14:00", 420, "Realisee", "SAT-001", "GS-KIR-01", 1250.0),
+        nomStation = "Kiruna Arctic Station"
     )
 }

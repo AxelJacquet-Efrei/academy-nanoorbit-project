@@ -1,5 +1,9 @@
 package com.efrei.nanoorbit.ui.planning
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,10 +28,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.efrei.nanoorbit.notifications.NanoOrbitNotificationHelper
 import com.efrei.nanoorbit.ui.components.FenetreCard
 import com.efrei.nanoorbit.ui.dashboard.NanoOrbitViewModel
 
@@ -36,6 +42,7 @@ fun PlanningScreen(
     viewModel: NanoOrbitViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val fenetres by viewModel.filteredFenetres.collectAsStateWithLifecycle()
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val selectedStation by viewModel.selectedStationCode.collectAsStateWithLifecycle()
@@ -43,6 +50,20 @@ fun PlanningScreen(
     var dureeText by remember { mutableStateOf("600") }
     var selectedSatelliteId by remember { mutableStateOf("SAT-001") }
     var validationMessage by remember { mutableStateOf<String?>(null) }
+    var notificationMessage by remember { mutableStateOf<String?>(null) }
+    var notificationsEnabled by remember {
+        mutableStateOf(NanoOrbitNotificationHelper.hasNotificationPermission(context))
+    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationsEnabled = granted || NanoOrbitNotificationHelper.hasNotificationPermission(context)
+        notificationMessage = if (notificationsEnabled) {
+            "Notifications activees"
+        } else {
+            "Permission notifications refusee"
+        }
+    }
 
     val totalDuration = fenetres.sumOf { it.duree }
     val totalVolume = fenetres.mapNotNull { it.volumeDonnees }.sum()
@@ -82,6 +103,42 @@ fun PlanningScreen(
                     Text("Synthese", style = MaterialTheme.typography.titleMedium)
                     Text("Contact total: $totalDuration s")
                     Text("Volume total planifie: ${"%.1f".format(totalVolume)} MB")
+                }
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Notifications passages", style = MaterialTheme.typography.titleMedium)
+                    if (!notificationsEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        Button(
+                            onClick = {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        ) {
+                            Text("Activer notifications")
+                        }
+                    } else {
+                        Text("Alertes activees pour les fenetres planifiees imminentes")
+                    }
+                    Button(
+                        onClick = {
+                            val shown = NanoOrbitNotificationHelper.showTestNotification(context)
+                            notificationMessage = if (shown) {
+                                "Notification de test envoyee"
+                            } else {
+                                "Autorise les notifications pour lancer le test"
+                            }
+                            notificationsEnabled = NanoOrbitNotificationHelper.hasNotificationPermission(context)
+                        }
+                    ) {
+                        Text("Tester notification")
+                    }
+                    notificationMessage?.let {
+                        Text(
+                            text = it,
+                            color = if (notificationsEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 

@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.osmdroid.android)
+    implementation(libs.androidx.work.runtime.ktx)
     annotationProcessor(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -75,7 +75,7 @@ fun SatelliteCard(
 @Composable
 fun SatelliteCardPreview() {
     SatelliteCard(
-        satellite = Satellite("SAT-001", "NanoObs-1", StatutSatellite.OPERATIONNEL, "3U", 1, "SSO", "2023-01-15", 4.5),
+        satellite = Satellite("SAT-001", "NanoOrbit-Alpha", StatutSatellite.OPERATIONNEL, "3U", "ORB-001", "SSO", 550, "2022-03-15", 1.3),
         onClick = {}
     )
 }

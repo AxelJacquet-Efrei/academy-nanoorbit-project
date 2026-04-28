@@ -74,13 +74,8 @@ fun DetailScreen(
                 modifier = Modifier.padding(innerPadding).padding(16.dp)
             )
         } else {
-            val altitude = viewModel.findOrbiteAltitude(satellite.idOrbite)
-            val batteryRatio = when (satellite.statut) {
-                StatutSatellite.OPERATIONNEL -> 0.86f
-                StatutSatellite.EN_VEILLE -> 0.62f
-                StatutSatellite.DEFAILLANT -> 0.28f
-                StatutSatellite.DESORBITE -> 0.0f
-            }
+            val altitude = satellite.altitude
+            val batteryRatio = ((satellite.capaciteBatterie ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
             val lifeText = when (satellite.statut) {
                 StatutSatellite.DESORBITE -> "Fin de vie"
                 StatutSatellite.DEFAILLANT -> "Moins de 6 mois"
@@ -106,7 +101,7 @@ fun DetailScreen(
                 Text("Masse: ${satellite.masse?.let { "$it kg" } ?: "N/A"}")
                 Text("Batterie: ${(batteryRatio * 100).toInt()}%")
                 LinearProgressIndicator(progress = { batteryRatio }, modifier = Modifier.fillMaxWidth())
-                Text("Duree de vie restante: $lifeText")
+                Text("Duree de vie restante: ${satellite.dureeViePrevue?.let { "$it mois" } ?: lifeText}")
 
                 SectionTitle("Instruments embarques")
                 if (instruments.isEmpty()) {

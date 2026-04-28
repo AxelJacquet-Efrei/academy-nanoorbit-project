@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.efrei.nanoorbit.data.models.FenetreCom
 import com.efrei.nanoorbit.data.models.Instrument
 import com.efrei.nanoorbit.data.models.Mission
+import com.efrei.nanoorbit.data.models.Orbite
 import com.efrei.nanoorbit.data.models.ParticipationMission
 import com.efrei.nanoorbit.data.models.Satellite
 import com.efrei.nanoorbit.data.models.StationSol
@@ -30,6 +31,9 @@ class NanoOrbitViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _stations = MutableStateFlow<List<StationSol>>(emptyList())
     val stations: StateFlow<List<StationSol>> = _stations.asStateFlow()
+
+    private val _orbites = MutableStateFlow<List<Orbite>>(emptyList())
+    val orbites: StateFlow<List<Orbite>> = _orbites.asStateFlow()
 
     private val _missions = MutableStateFlow<List<Mission>>(emptyList())
     val missions: StateFlow<List<Mission>> = _missions.asStateFlow()
@@ -102,8 +106,18 @@ class NanoOrbitViewModel(application: Application) : AndroidViewModel(applicatio
                 }
 
                 _stations.value = repository.getStations()
+                _orbites.value = repository.getOrbites()
                 _missions.value = repository.getMissions()
                 _participations.value = repository.getParticipations()
+
+                if (satelliteResult.fromCache || fenetreResult.fromCache) {
+                    val refreshedSatellites = repository.refreshSatellites()
+                    val refreshedFenetres = repository.refreshFenetres()
+                    _satellites.value = refreshedSatellites.data
+                    _fenetres.value = refreshedFenetres.data
+                    _isOffline.value = false
+                    _cacheAgeMillis.value = 0
+                }
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Erreur reseau inconnue"
             } finally {
@@ -121,6 +135,10 @@ class NanoOrbitViewModel(application: Application) : AndroidViewModel(applicatio
                 val fenetres = repository.refreshFenetres()
                 _satellites.value = satellites.data
                 _fenetres.value = fenetres.data
+                _stations.value = repository.getStations()
+                _orbites.value = repository.getOrbites()
+                _missions.value = repository.getMissions()
+                _participations.value = repository.getParticipations()
                 _isOffline.value = false
                 _cacheAgeMillis.value = 0
             } catch (e: Exception) {
@@ -152,10 +170,6 @@ class NanoOrbitViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun findSatellite(id: String): Satellite? = _satellites.value.firstOrNull { it.idSatellite == id }
-
-    fun findOrbiteAltitude(idOrbite: Int): Int? {
-        return com.efrei.nanoorbit.data.models.MockData.orbites.firstOrNull { it.idOrbite == idOrbite }?.altitude
-    }
 
     fun missionsForSatellite(id: String): List<Pair<Mission, String>> {
         val activeMissions = _missions.value.filter { it.statutMission.equals("Active", ignoreCase = true) }

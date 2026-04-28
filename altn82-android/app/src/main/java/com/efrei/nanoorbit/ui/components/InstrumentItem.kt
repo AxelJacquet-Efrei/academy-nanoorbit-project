@@ -64,7 +64,7 @@ fun InstrumentItem(
 @Composable
 fun InstrumentItemPreview() {
     InstrumentItem(
-        instrument = Instrument("INST-01", "Camera Optique", "OptiCam-X", 0.5, 12.0),
+        instrument = Instrument("INS-CAM-01", "Camera optique", "PlanetScope-Mini", 3.0, 2.5),
         etatFonctionnement = "OK"
     )
 }
