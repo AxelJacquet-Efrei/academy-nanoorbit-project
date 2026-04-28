@@ -40,3 +40,5 @@ GROUPE_*/
 *.bak
 *.swp
 *~
+
+__pycache__
