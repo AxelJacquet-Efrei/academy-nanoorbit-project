@@ -1,5 +1,6 @@
 {
     "cSpell.enabledFileTypes": {
-        "oracle": false
+        "oracle": false,
+        "mdc": false
     }
 }
