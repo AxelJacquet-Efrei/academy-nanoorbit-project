@@ -82,6 +82,30 @@ fun DashboardScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Dashboard",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Button(
+                    enabled = !isLoading,
+                    onClick = { viewModel.refreshSatellites() }
+                ) {
+                    Text(if (isLoading) "Actualisation..." else "Actualiser")
+                }
+            }
+
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Erreur : $it", color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             if (isOffline) {
                 OfflineBanner(cacheAgeMillis = cacheAgeMillis)
                 Spacer(modifier = Modifier.height(8.dp))

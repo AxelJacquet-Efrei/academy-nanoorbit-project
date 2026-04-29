@@ -43,6 +43,7 @@ curl.exe http://localhost:8000/stations
 ### Dashboard
 
 - Liste des satellites via `LazyColumn`.
+- Bouton `Actualiser` pour relancer un chargement complet depuis l'API.
 - Recherche temps reel par nom de satellite ou type d'orbite.
 - Filtres par statut avec `FilterChip`.
 - Compteur des satellites operationnels.
