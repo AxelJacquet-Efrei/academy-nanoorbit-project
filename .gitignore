@@ -40,3 +40,7 @@ GROUPE_*/
 *.bak
 *.swp
 *~
+
+__pycache__
+
+.env
